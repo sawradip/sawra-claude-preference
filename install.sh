@@ -11,7 +11,7 @@ set -euo pipefail
 
 CLAUDE_DIR="$HOME/.claude"
 CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
-MARKER="personal-preferences skill"
+MARKER="sawra-claude-preference"
 POINTER_LINE='- A `personal-preferences` skill exists at `~/.claude/skills/personal-preferences/SKILL.md` (synced from https://github.com/sawradip/sawra-claude-preference — the personal-preferences skill). It holds Sawradip'"'"'s standing personal/work preferences — how he likes tasks tracked, his ClickUp workspace, general working style — and applies regardless of which project or repo the current session is in. Load/read it early when it would help, and keep it updated (with his review) as new durable preferences come up in conversation.'
 
 mkdir -p "$CLAUDE_DIR"
