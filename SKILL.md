@@ -12,7 +12,7 @@ This is a growing, user-maintained record of how Sawradip likes to work with Cla
 - **Reading it:** load this early in a session, or whenever behavior should be tailored to this specific user rather than generic defaults.
 - **Adding to it:** when the user states a new durable preference — in *any* session, on *any* project, on *any* machine — add it under the matching `##` section below, or create a new `##` section if it doesn't fit an existing one. Don't let decisions from one session/project/computer stay siloed there; they belong here so every future session sees them too.
 - **Syncing it:** this directory is a git repo (remote: https://github.com/sawradip/sawra-claude-preference, private). After editing, commit the change with a clear message. Don't `git push` automatically — leave that to the user unless they've said otherwise — but do tell them a change is committed and ready to push.
-- **New machine setup:** see the one-liner at the bottom of this file / the repo's `README.md`.
+- **New machine setup:** don't duplicate setup steps here — see the repo's `README.md`, which is the single source for that.
 
 ## Identity
 
@@ -44,11 +44,4 @@ _(Empty for now — add sections here as new preferences come up.)_
 
 ---
 
-**New machine, nothing set up yet?** Paste this:
-
-```bash
-( [ -d ~/.claude/skills/personal-preferences/.git ] && git -C ~/.claude/skills/personal-preferences pull ) || gh repo clone sawradip/sawra-claude-preference ~/.claude/skills/personal-preferences
-bash ~/.claude/skills/personal-preferences/install.sh
-```
-
-Requires `gh` installed and authenticated (`gh auth login`) on that machine — it's a private repo. See `install.sh` / `README.md` in this repo for what the script does.
+New-machine setup, prerequisites, and how the sync works: see this repo's `README.md`.
