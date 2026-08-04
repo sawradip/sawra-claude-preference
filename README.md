@@ -1,63 +1,76 @@
 # sawra-claude-preference
 
-Sawradip's personal, cross-machine Claude Code skills — synced via this repo. It's meant
-to live at `~/.claude/sawra-claude-preference/` on every machine, with each skill
-subdirectory symlinked into `~/.claude/skills/<name>/` (that's where Claude Code actually
-looks — it scans `~/.claude/skills/` regardless of which project a session is working in).
+Sawradip's Claude Code skills and global instructions, synced across machines.
 
-## What's in here
-
-- **One subdirectory per skill**, each with its own `SKILL.md` — frontmatter (`name`/
-  `description`) controls when it gets surfaced; the body is the real content.
-  - `personal-preferences/` — standing personal/work preferences (task tracking, ClickUp
-    workspace, general working style). Grows over time as new durable preferences come up.
-  - `codex-review-loop/` — adversarial code review via the Codex CLI, fix-and-re-review
-    until LGTM, with fast/standard/thorough depth and inline/background execution modes.
-- **`install.sh`** — idempotent setup script that symlinks every skill subdirectory into
-  `~/.claude/skills/` and makes sure `~/.claude/CLAUDE.md` points at each one. Safe to
-  re-run any time; automatically picks up any new skill subdirectory added later without
-  needing an update itself.
-- **`README.md`** — this file. The single place for "how do I set this up / how does
-  syncing work" — not duplicated elsewhere.
-
-## Set up on a new machine
-
-**Prerequisite:** `gh` (GitHub CLI) installed and authenticated (`gh auth login`) on that
-machine. This is a private repo, so anonymous `curl`/`git clone` won't work.
+## Install
 
 ```bash
-( [ -d ~/.claude/sawra-claude-preference/.git ] && git -C ~/.claude/sawra-claude-preference pull ) || \
-  gh repo clone sawradip/sawra-claude-preference ~/.claude/sawra-claude-preference
-bash ~/.claude/sawra-claude-preference/install.sh
+curl -fsSL https://raw.githubusercontent.com/sawradip/sawra-claude-preference/main/install.sh | bash
 ```
 
-What this does:
-1. If `~/.claude/sawra-claude-preference` already exists (already set up before), just
-   `git pull` the latest. Otherwise, clone it fresh.
-2. Run `install.sh`, which symlinks every skill subdirectory into `~/.claude/skills/` and
-   makes sure `~/.claude/CLAUDE.md` has a pointer to each one. Without those pointers, a
-   skill exists on disk but nothing guarantees a session actually notices it. Both steps
-   are idempotent — safe to re-run, won't duplicate anything, won't clobber a pointer or
-   symlink that's already correct.
+That is the whole thing. It clones the repo to `~/.claude/sawra-claude-preference`,
+symlinks every skill into `~/.claude/skills/`, and writes a managed block into
+`~/.claude/CLAUDE.md`.
 
-**Migrating a machine set up before this repo held multiple skills:** that older layout
-cloned straight to `~/.claude/skills/personal-preferences`. `install.sh` detects that and
-leaves it alone rather than guessing — it prints the exact `rm -rf` to run once you've
-confirmed the new checkout at `~/.claude/sawra-claude-preference` looks right, then
-re-running `install.sh` will symlink it into place normally.
+**Re-run it any time** — to update after a `git pull`, or just to check. It is
+idempotent: nothing is duplicated, and if there is nothing to do it says so.
 
-## Updating a skill, or adding a new one
+```
+sawra-claude-preference
 
-1. Edit the relevant `SKILL.md` directly. For `personal-preferences`, add to an existing
-   `##` section if it fits, or start a new one if it doesn't — decisions made in *any*
-   session, on *any* project, on *any* machine, belong here rather than staying siloed to
-   wherever they came up.
-2. To add a brand-new skill: create a new subdirectory with its own `SKILL.md`, then run
-   `install.sh` — it picks up new subdirectories automatically, no script changes needed.
-3. Commit with a clear message.
-4. `git push` when ready. This is a manual step on purpose — a change made in one session
-   on one machine shouldn't silently go live everywhere without you choosing to sync it.
+  CLAUDE.md: managed block already current
 
-Other machines pick up the change with a plain `git pull` inside
-`~/.claude/sawra-claude-preference/` (re-run `install.sh` too if a *new* skill
-subdirectory was added, so it gets symlinked).
+Already set up and up to date. Nothing to do.
+```
+
+Requires `git` and `curl`. Nothing else — the repo is public, so no auth.
+
+## What it touches
+
+| Path | What happens |
+|---|---|
+| `~/.claude/sawra-claude-preference/` | The clone. Pulled on re-run. |
+| `~/.claude/skills/<name>` | A symlink per skill. Existing real directories are never overwritten. |
+| `~/.claude/CLAUDE.md` | One managed block. Created if absent, appended if the file exists, replaced in place on later runs. |
+
+Everything outside the markers in `CLAUDE.md` is yours and is never touched:
+
+```markdown
+<!-- BEGIN sawra-claude-preference — managed by install.sh, do not edit between markers -->
+...
+<!-- END sawra-claude-preference -->
+```
+
+Edit inside the markers and the next run overwrites it. Change the source in
+this repo instead.
+
+## The skills
+
+One directory per skill, each with a `SKILL.md`. The frontmatter `description`
+decides when Claude surfaces it; the body is the content.
+
+- **`personal-preferences`** — standing preferences that apply in any repo:
+  task tracking and the ClickUp workspace, working style, and how code should
+  be written and commented.
+- **`codex-review-loop`** — adversarial review via the Codex CLI, iterating
+  fix-and-re-review until LGTM.
+
+## Adding or changing a skill
+
+1. Edit the relevant `SKILL.md`, or create a new directory with one.
+2. Run `install.sh`. New skills are picked up automatically — the CLAUDE.md
+   pointers are generated from each skill's frontmatter, so the script never
+   needs editing.
+3. Commit, then `git push` when you want it live.
+
+Pushing is deliberately manual. A preference captured in one session on one
+machine should not go live everywhere until you have looked at it.
+
+Other machines: re-run the install command. It pulls and re-syncs in one step.
+
+## Migrating an older machine
+
+Machines set up before this repo held multiple skills cloned it straight to
+`~/.claude/skills/personal-preferences`. The installer detects that, refuses to
+link over it, and prints the exact command to clear it. Nothing is deleted for
+you.
