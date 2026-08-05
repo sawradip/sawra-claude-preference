@@ -122,14 +122,17 @@ summary at the end.** The point of this skill is a real, auditable review conver
 the PR itself, not a compressed after-the-fact paraphrase in the description. A user who
 opens the PR should see the same round-by-round back-and-forth you saw, not a synopsis.
 
-The moment a round's verdict comes back, before doing anything else:
-- `CHANGES_NEEDED` → post it as a formal review: `gh pr review <N> --request-changes --body
-  "..."`. Body = the verbatim findings block (file:line + description), clearly labeled
-  `**Codex review — round K**` so it's clear this is Codex's actual output relayed via `gh`
-  (you're posting it under your own authenticated identity, not impersonating a separate
-  reviewer account — say so plainly, don't blur that).
-- `LGTM` → `gh pr review <N> --approve --body "**Codex review — round K (final)**\n\nSTATUS:
-  LGTM\n\n<any closing note>"`.
+The moment a round's verdict comes back, before doing anything else, post it to the PR.
+Try a formal review first — `gh pr review <N> --request-changes --body "..."` (or
+`--approve` for LGTM) — but GitHub refuses request-changes/approve reviews from the PR's
+own author (`Review Can not request changes on your own pull request`), which is the
+common case here since this skill's PRs are usually opened under the same authenticated
+account running the loop. When that happens, fall back to `gh pr comment <N> --body "..."`
+— a plain comment, not a formal review state, but still posted live, per-round, on the PR
+itself rather than batched into a final summary. Either way, body = the verbatim findings
+block (file:line + description), clearly labeled `**Codex review — round K**` so it's
+clear this is Codex's actual output relayed via `gh` under your own authenticated identity
+— don't blur that or imply a separate reviewer account posted it.
 
 Then fix each finding directly (normal Edit/Write work — Codex only reviews, it never
 writes code in this workflow). Before fixing anything flagged, treat it as unverified and
