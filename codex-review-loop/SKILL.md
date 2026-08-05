@@ -117,14 +117,35 @@ first time this skill is used against a given codebase.
 
 ## 4. The fix-and-loop step
 
-On `CHANGES_NEEDED`: fix each finding directly (normal Edit/Write work — Codex only
-reviews, it never writes code in this workflow), commit with a message describing what the
-round found and fixed, then start the next round *from the updated diff*, up to the round
-cap for the chosen depth. On `LGTM`, or when the round cap is reached without one: stop.
+**Post each round to the PR as it happens — do not run the whole loop locally and write a
+summary at the end.** The point of this skill is a real, auditable review conversation on
+the PR itself, not a compressed after-the-fact paraphrase in the description. A user who
+opens the PR should see the same round-by-round back-and-forth you saw, not a synopsis.
 
-**Always write the full review trail into the PR description** before finishing — what
-each round found, what got fixed, and the final verdict. This is what makes the loop
-auditable later and is not optional in either mode.
+The moment a round's verdict comes back, before doing anything else:
+- `CHANGES_NEEDED` → post it as a formal review: `gh pr review <N> --request-changes --body
+  "..."`. Body = the verbatim findings block (file:line + description), clearly labeled
+  `**Codex review — round K**` so it's clear this is Codex's actual output relayed via `gh`
+  (you're posting it under your own authenticated identity, not impersonating a separate
+  reviewer account — say so plainly, don't blur that).
+- `LGTM` → `gh pr review <N> --approve --body "**Codex review — round K (final)**\n\nSTATUS:
+  LGTM\n\n<any closing note>"`.
+
+Then fix each finding directly (normal Edit/Write work — Codex only reviews, it never
+writes code in this workflow). Before fixing anything flagged, treat it as unverified and
+spot-check the file:line actually says what the finding claims — false positives happen
+(see §3's note, applies at every depth, not just thorough). Commit, push, verify the push
+landed (see below), then post a **separate** `gh pr comment` — *not* folded into the next
+review — stating plainly what changed: which findings were fixed and how, which (if any)
+were investigated and dismissed as false positives and why. This comment is what lets a
+human follow the thread without re-deriving your reasoning. Only after that comment is
+posted do you start the next round from the updated diff, up to the round cap for the
+chosen depth.
+
+The PR description may still carry a short summary once the loop finishes — that's fine as
+a TL;DR for someone landing on the PR cold — but it is a supplement to the review/comment
+trail, never a replacement for it. If you find yourself writing the round-by-round history
+into the description instead of onto the PR as it happens, you're doing this skill wrong.
 
 **Push verification**: after every push in this loop, confirm with `git ls-remote
 <remote> <branch>` against local `git rev-parse HEAD` — an exact SHA match, not just a
@@ -137,10 +158,11 @@ Spawn exactly one `Agent` call: `isolation: "worktree"`, `run_in_background: tru
 prompt must be fully self-contained (the agent has no memory of this conversation) —
 include: the PR/branch to review, the chosen depth and its round cap, the full loop
 mechanics from §§2-4 above (or a pointer to this skill file's path, if the subagent type
-can load skills), and an explicit instruction to push fixes and update the PR description
-itself rather than just reporting findings back. Its final message must state: final
-verdict, how many rounds it took, a one-line summary of what was fixed each round, and the
-PR URL.
+can load skills), and an explicit instruction that §4's per-round posting requirement
+applies here too — post each round's review and each fix-comment to the PR live as it
+happens, the same as inline mode, not just a final description update. Its final message
+must state: final verdict, how many rounds it took, a one-line summary of what was fixed
+each round, and the PR URL.
 
 Once launched, tell the user in one sentence that it's running in the background and stop
 — do not poll it, do not guess at its progress, and do not fabricate intermediate status.
