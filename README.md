@@ -54,6 +54,10 @@ decides when Claude surfaces it; the body is the content.
   be written and commented.
 - **`codex-review-loop`** — adversarial review via the Codex CLI, iterating
   fix-and-re-review until LGTM.
+- **`android-dev-remote`** — building Android apps (Expo/React Native + Kotlin) with
+  Claude Code on a headless server over Tailscale: GPU-less emulator, live view,
+  phone over a slow link, native installs, and how to verify on devices. Ships
+  reusable scripts and systemd unit templates.
 
 ## Adding or changing a skill
 

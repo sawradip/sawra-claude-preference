@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Metro on $METRO_PORT behind metro-proxy on :8081, which gzips bundles for slow phone links.
+# The emulator reaches the proxy via adb reverse, phones via the Tailscale IP.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+source scripts/env.sh
+tailscale_ip="$(tailscale ip -4)"
+export EXPO_PACKAGER_PROXY_URL="http://$tailscale_ip:8081"
+export REACT_NATIVE_PACKAGER_HOSTNAME="$tailscale_ip"
+for device in $(adb devices | awk 'NR > 1 && $2 == "device" { print $1 }'); do
+  adb -s "$device" reverse tcp:8081 tcp:8081
+done
+exec npx expo start --dev-client --port "${METRO_PORT:-18081}" "$@"

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Installs a (debug) APK on a remote device over a slow link: gzip, push, gunzip on device, pm install.
+# Usage: scripts/phone-install <adb-serial> <path/to/app.apk>
+set -euo pipefail
+source "$(dirname "$0")/env.sh"
+serial="$1"
+apk="$2"
+packed="$(mktemp --suffix=.apk.gz)"
+trap 'rm -f "$packed"' EXIT
+
+gzip -c -6 "$apk" > "$packed"
+echo "sending $(du -h "$packed" | cut -f1) (APK is $(du -h "$apk" | cut -f1))"
+start=$(date +%s)
+adb -s "$serial" push "$packed" /data/local/tmp/app.apk.gz
+adb -s "$serial" shell "cd /data/local/tmp && rm -f app.apk && gunzip app.apk.gz && pm install -r app.apk; rm -f app.apk"
+echo "done in $(( $(date +%s) - start ))s"

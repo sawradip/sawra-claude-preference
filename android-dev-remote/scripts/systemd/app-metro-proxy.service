@@ -1,0 +1,14 @@
+# Gzip-friendly proxy in front of Metro. Replace <TAILNET_IP> and <PROJECT_DIR>.
+[Unit]
+Description=Metro proxy for remote phones
+After=app-metro.service
+
+[Service]
+Environment=PROXY_HOSTS=127.0.0.1,<TAILNET_IP>
+Environment=METRO_UPSTREAM=http://127.0.0.1:18081
+WorkingDirectory=<PROJECT_DIR>/tools/metro-proxy
+ExecStart=%h/opt/emu-stream-venv/bin/python proxy.py
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

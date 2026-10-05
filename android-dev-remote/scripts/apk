@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Debug build, installed on every connected device it supports.
+# Usage: [ABIS=arm64-v8a] scripts/apk [--no-install]
+set -euo pipefail
+cd "$(dirname "$0")/.."
+source scripts/env.sh
+abis="${ABIS:-x86_64,arm64-v8a}"
+npx expo prebuild -p android --no-install >/dev/null
+(cd android && ./gradlew assembleDebug -PreactNativeArchitectures="$abis" --console=plain)
+apk=android/app/build/outputs/apk/debug/app-debug.apk
+[ "${1:-}" = "--no-install" ] && { echo "$apk"; exit 0; }
+for device in $(adb devices | awk 'NR > 1 && $2 == "device" { print $1 }'); do
+  device_abi="$(adb -s "$device" shell getprop ro.product.cpu.abi | tr -d '\r')"
+  if [[ ",$abis," == *",$device_abi,"* ]]; then
+    adb -s "$device" install -r "$apk"
+  else
+    echo "Skipping $device: $device_abi is not in $abis"
+  fi
+done

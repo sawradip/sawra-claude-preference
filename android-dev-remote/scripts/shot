@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Emulator screenshot taken host-side, independent of the guest UI. Prints the PNG path.
+set -euo pipefail
+source "$(dirname "$0")/env.sh"
+out="${1:-${TMPDIR:-/tmp}/optimal-shots}"
+mkdir -p "$out"
+adb emu screenrecord screenshot "$out" >/dev/null
+ls -t "$out"/Screenshot_*.png | head -1

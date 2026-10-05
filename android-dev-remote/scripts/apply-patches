@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Applies patches/*.patch to node_modules; skips any that are already applied.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+for patch in patches/*.patch; do
+  [ -e "$patch" ] || continue
+  if git apply --reverse --check "$patch" 2>/dev/null; then
+    echo "already applied: $patch"
+  else
+    git apply "$patch" && echo "applied: $patch"
+  fi
+done

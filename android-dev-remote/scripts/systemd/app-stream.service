@@ -1,0 +1,15 @@
+# Live emulator view on the tailnet. Replace <TAILNET_IP> and <PROJECT_DIR>.
+[Unit]
+Description=Emulator live view (Tailscale only)
+After=app-emulator.service
+
+[Service]
+Environment=STREAM_HOST=<TAILNET_IP>
+Environment=STREAM_PORT=8887
+Environment=PATH=%h/Android/Sdk/platform-tools:/usr/bin:/bin
+WorkingDirectory=<PROJECT_DIR>/tools/emulator-stream
+ExecStart=%h/opt/emu-stream-venv/bin/python server.py
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

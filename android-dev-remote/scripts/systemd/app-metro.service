@@ -1,0 +1,13 @@
+# Metro dev server via the project's scripts/dev. Replace <PROJECT_DIR>.
+[Unit]
+Description=Metro dev server
+After=app-emulator.service
+
+[Service]
+WorkingDirectory=<PROJECT_DIR>
+Environment=PATH=/usr/bin:/bin
+ExecStart=<PROJECT_DIR>/scripts/dev
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

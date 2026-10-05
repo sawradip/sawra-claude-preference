@@ -1,0 +1,48 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emulator</title>
+<style>
+  body { margin: 0; background: #111418; color: #fff; font: 14px DM Sans, sans-serif; display: flex; flex-direction: column; align-items: center; }
+  canvas { max-height: 88vh; max-width: 100vw; touch-action: none; background: #000; }
+  nav { display: flex; gap: 12px; padding: 10px; }
+  button { background: #2A63D9; color: #fff; border: 0; border-radius: 26px; padding: 12px 24px; font: inherit; }
+</style>
+<canvas id="screen"></canvas>
+<nav>
+  <button data-key="back">Back</button>
+  <button data-key="home">Home</button>
+  <button data-key="recents">Recents</button>
+</nav>
+<script>
+// Device pixels of the AVD; override with ?w=1080&h=2400.
+const params = new URLSearchParams(location.search);
+const DEVICE_WIDTH = Number(params.get("w") || 1080), DEVICE_HEIGHT = Number(params.get("h") || 2400);
+const canvas = document.getElementById("screen");
+const ctx = canvas.getContext("2d");
+const socket = new WebSocket(`ws://${location.host}/ws`);
+socket.binaryType = "blob";
+
+socket.onmessage = async ({ data }) => {
+  const frame = await createImageBitmap(data);
+  canvas.width = frame.width;
+  canvas.height = frame.height;
+  ctx.drawImage(frame, 0, 0);
+};
+
+const send = (event) => socket.readyState === WebSocket.OPEN && socket.send(JSON.stringify(event));
+
+function devicePoint(e) {
+  const box = canvas.getBoundingClientRect();
+  return {
+    x: Math.round(((e.clientX - box.left) / box.width) * DEVICE_WIDTH),
+    y: Math.round(((e.clientY - box.top) / box.height) * DEVICE_HEIGHT),
+  };
+}
+
+let pressed = false;
+canvas.addEventListener("pointerdown", (e) => { pressed = true; canvas.setPointerCapture(e.pointerId); send({ type: "down", ...devicePoint(e) }); });
+canvas.addEventListener("pointermove", (e) => pressed && send({ type: "move", ...devicePoint(e) }));
+canvas.addEventListener("pointerup", (e) => { pressed = false; send({ type: "up", ...devicePoint(e) }); });
+document.querySelectorAll("button").forEach((b) => b.onclick = () => send({ type: "key", key: b.dataset.key }));
+</script>

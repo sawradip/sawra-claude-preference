@@ -1,0 +1,12 @@
+# Copy to ~/.config/systemd/user/. Replace <AVD>. `sg kvm` covers a user manager started before the kvm group was added.
+[Unit]
+Description=Android emulator (<AVD>)
+
+[Service]
+Environment=ANDROID_HOME=%h/Android/Sdk
+ExecStart=/usr/bin/sg kvm -c "%h/Android/Sdk/emulator/emulator -avd <AVD> -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -grpc 8554"
+ExecStop=%h/Android/Sdk/platform-tools/adb emu kill
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
